@@ -1,0 +1,27 @@
+<div class="hidden w-[100%] bg-purple-500 md:flex flex-around text-white text-xl lg:text-2xl lg:py-[6px] md:py-[4px] py-[3px] px-3 md:px-4 lg:px-5">
+    <div class="md:basis-[15%]">
+        Logo
+    </div>
+    <div class="md:basis-[45%]">
+        <ul class="flex md:w-[40%] lg:w-[30%] justify-around">
+            <li><a class="hover:text-gray-500 duration-500" href="/">Home</a></li>
+            <li><a class="hover:text-gray-500 duration-500" href="">Game</a></li>
+        </ul>
+    </div>
+    <div class="md:basis-[45%] flex justify-end">
+        <div class="flex justify-around items-center md:w-[60%] float-right">  
+            <div>
+                <a class="border-[1px] border-white rounded-lg md:px-2 md:py-1 
+                hover:text-gray-500 duration-500" href="{% url 'register' %}">Register</a>
+            </div>
+            <div>
+                <a class="border-[1px] border-white rounded-lg md:px-2 md:py-1 
+                hover:text-gray-500 duration-500" href="{% url 'login' %}">Login</a>
+            </div>
+            <div>
+                <a class="border-[1px] border-white rounded-lg md:px-2 md:py-1 
+                hover:text-gray-500 duration-500" href="{% url 'logout' %}">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>

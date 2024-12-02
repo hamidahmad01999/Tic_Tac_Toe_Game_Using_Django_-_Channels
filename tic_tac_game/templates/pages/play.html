@@ -1,0 +1,352 @@
+{% extends 'index.html' %}
+{% block start %}
+
+<div style="min-height: 100vh;" class="bg-slate-500 flex flex-col justify-around items-center py-4">
+    
+    <div class="flex justify-around w-full md:w-[80%] lg:w-[70%] py-4 px-4 md:py-10 md:px-10">
+        <div>
+            <p>Game won: <b id="creator_game_won">0</b></p>
+            <div class="relative">
+                {% load static %}
+                <img style="border: 2px solid #6C757D;" class="border-[4px] rounded-full w-[100px] h-[100px] sm:w-[200px] sm:h-[200px] md:w-[250px] md:h-[250px] " id="creator_image" src="{% static '/images/img_user.png' %}" alt="">
+                <p>{{game_creator_fullname}}</p>
+                <h1 class="" id="creator_joined">Offline</h1>
+            </div>
+        </div>
+        <div>
+            <p>Total games played: <b id="total_games_played">0</b></p>
+            <p>Games draw: <b id="draw_games">0</b></p>
+        </div>
+        <div>
+            <p>Game won: <b id="opponent_game_won">0</b></p>
+            <div>   
+                {% load static %}
+                <img style="border: 2px solid #6C757D;" class="border-[4px] rounded-full w-[100px] h-[100px] sm:w-[200px] sm:h-[200px] md:w-[250px] md:h-[250px] " id="opponent_image" src="{% static '/images/img_user.png' %}" alt="">
+                <p id="opponent_name">Unknow opponent</p>
+                <h1 class=" right-[10px]" id="opponent_joined">Offline</h1>
+            </div>
+        </div>
+    </div>
+    <div class=" w-[100%] flex flex-col items-center justify-center">
+        <div>
+            <h2 class="text-white text-3xl mb-4">Tic Tac Toe Using Django Channels</h2>
+        </div>
+        <div class="border-[1px] border-black ">
+            <div class="flex justify-between bg-white px-4">
+                <h2 class="text-2xl">Player 1 <b>(X)</b></h2>
+                <h2 class="text-2xl">Player 2 <b>(O)</b></h2>
+            </div>
+            <div>
+                <p id="turn"></p>
+            </div>
+            <div class="grid grid-cols-3">
+                <div data-cell-index="0" class="bg-gray-300 text-center border-[1px] border-black text-5xl py-2 h-[70px] lg:h-[100px]  w-[90px] lg:w-[120px] boxes"></div>
+                <div data-cell-index="1" class="bg-gray-300 text-center border-[1px] border-black text-5xl py-2 h-[70px] lg:h-[100px]  w-[90px] lg:w-[120px] boxes"></div>
+                <div data-cell-index="2" class="bg-gray-300 text-center border-[1px] border-black text-5xl py-2 h-[70px] lg:h-[100px]  w-[90px] lg:w-[120px] boxes"></div>
+                <div data-cell-index="3" class="bg-gray-300 text-center border-[1px] border-black text-5xl py-2 h-[70px] lg:h-[100px]  w-[90px] lg:w-[120px] boxes"></div>
+                <div data-cell-index="4" class="bg-gray-300 text-center border-[1px] border-black text-5xl py-2 h-[70px] lg:h-[100px]  w-[90px] lg:w-[120px] boxes"></div>
+                <div data-cell-index="5" class="bg-gray-300 text-center border-[1px] border-black text-5xl py-2 h-[70px] lg:h-[100px]  w-[90px] lg:w-[120px] boxes"></div>
+                <div data-cell-index="6" class="bg-gray-300 text-center border-[1px] border-black text-5xl py-2 h-[70px] lg:h-[100px]  w-[90px] lg:w-[120px] boxes"></div>
+                <div data-cell-index="7" class="bg-gray-300 text-center border-[1px] border-black text-5xl py-2 h-[70px] lg:h-[100px]  w-[90px] lg:w-[120px] boxes"></div>
+                <div data-cell-index="8" class="bg-gray-300 text-center border-[1px] border-black text-5xl py-2 h-[70px] lg:h-[100px]  w-[90px] lg:w-[120px] boxes"></div>
+            </div>
+            <div>
+                <p id="disconnected"></p>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let another_player_online = true
+    let turn_element = document.getElementById('turn')
+    let game_creator = '{{game.game_creator}}'
+    let game_opponent = '{{game.game_opponent}}'
+    let game_creator_fullname = '{{game_creator_fullname}}'
+    let game_opponent_fullname = ''
+    let creator_image = ''
+    let opponent_image = ''
+    let turn = ''
+    let creator_online = false
+    let opponent_online = false
+    // let isturn = true
+    let is_opponent_joined = false
+    const room_code = '{{room_code}}'
+    const user_name = '{{username}}'
+    const player = '{{game_symbol}}'
+    // if(user_name==game_creator){
+    //     const player ="X"
+    // }else{
+    //     const player ="O"
+    // }
+    
+    console.log("Hello world")
+    console.log(room_code, user_name)
+
+    const setOnline = (id, image_id)=>{
+        console.log("Online function trigger")
+        let element = document.getElementById(id)
+        element.innerHTML = "Online"
+        let image_element = document.getElementById(image_id)
+        image_element.style.border = "4px solid #28A745"
+    }
+    const setOffline = (id, image_id)=>{
+        console.log("Offline function trigger", id)
+        let element = document.getElementById(id)
+        element.innerHTML = "Offline"
+        let image_element = document.getElementById(image_id)
+        image_element.style.border = "4px solid #B0BEC5"
+    }
+
+    var socket = new WebSocket("ws://localhost:8000/ws/game/"+ room_code)
+    console.log(socket)
+
+    let game_state = ["", "", "", "", "", "", "", "", ""]
+
+    var boxes = document.querySelectorAll('.boxes')
+
+    boxes.forEach((element)=>{
+        element.addEventListener("click", (e)=>{
+            console.log(is_opponent_joined)
+            console.log(turn)
+            // console.log(isturn)
+            if(!is_opponent_joined || !another_player_online){
+                swal({
+                    title: "Error!",
+                    text: "Wait for opponent to join",
+                    type: "error",
+                    confirmButtonText: "Cool"
+                });
+            }
+            else if(turn!=user_name ){
+                // || isturn==false
+                swal({
+                    title: "Error!",
+                    text: "It's not your turn",
+                    type: "error",
+                    confirmButtonText: "Cool"
+                });
+            }
+            else{
+                console.log("Turn belongs to ", turn)
+                isturn=false 
+                let index= e.target.getAttribute('data-cell-index');
+                console.log(index);
+                if(user_name==game_creator){
+                    setText(index, "X")
+                }else{
+                    setText(index, "O")
+                }
+            }
+        })
+    })
+
+    const setText = (index, value)=>{
+        data = {
+            'index': index,
+            'player':value,
+            'type':'running',
+            'turn':turn
+        }
+        index=parseInt(index)
+        
+        if(game_state[index]==""){
+            game_state[index]=value
+            // boxes[index].innerHTML=value
+            for(let i=0; i<game_state.length; i++){
+                boxes[i].innerHTML=game_state[i]
+            }
+
+            socket.send(JSON.stringify({data}))
+            console.log("Message send")
+            checkWon(value, player)
+
+        }else{
+            // alert("Already entered")
+            swal({
+                title: "Error!",
+                text: "Here's my error message!",
+                type: "error",
+                confirmButtonText: "Cool"
+            });
+        }
+    }
+
+    socket.onopen = (e)=>{
+        console.log("Connected to the channels")
+    }
+
+    socket.onmessage = (e)=>{
+        data= JSON.parse(e.data)
+        console.log("Data is: ",data.payload)
+        console.log("Game is: ", data.payload.type==="game")
+        console.log("Opponent is: ", data.payload.type==="opponent")
+        if(data.payload.message_type==="game"){
+            console.log("Enter into game.")
+            game_state=data.payload.box_data
+            console.log("On message turn change to : ", data.payload.turn)
+            console.log(data.payload.player!==player)
+            turn = data.payload.turn
+            if(turn===user_name){
+
+                turn_element.innerHTML = `Turn belongs to you`
+            }else{
+
+                turn_element.innerHTML = `Turn belongs to ${turn}`
+            }
+            if(data.payload.opponent !=="no"){
+                is_opponent_joined=true
+            }
+            console.log(game_state, data.payload.box_data)
+            if(data.payload.type==="end" && data.payload.player!==player){
+                console.log("Loss section")
+                swal("Sorry", "You lost", "error")
+                clearGame()
+            }else if(data.payload.type==="over" ){
+                swal("Game over", "No one is winner, Try again", "warning")
+                clearGame()
+            }else if(data.payload.type==="running" && turn===user_name){
+                setAnotherUserText(data.payload.index, data.payload.player)
+            }
+            if(data.payload.game_stats){
+                document.getElementById('creator_game_won').innerHTML=data.payload.game_stats.creator_won
+                document.getElementById('opponent_game_won').innerHTML=data.payload.game_stats.opponent_won
+                document.getElementById('total_games_played').innerHTML=data.payload.game_stats.total_games
+                console.log("********************************************")
+                console.log("Draw games are: ", data.payload.game_stats.draw_games)
+                console.log("********************************************")
+                document.getElementById('draw_games').innerHTML=data.payload.game_stats.draw_games
+            }
+            console.log("Player name and turn", turn, " ", user_name)
+        }else if(data.payload.message_type==="opponent"){
+            console.log("Enter into opponent.")
+            if(data.payload.opponent==="joined"){
+                is_opponent_joined=true
+            }
+            game_state=data.payload.box_data
+            turn = data.payload.turn
+            console.log("Some other message came: ",data)
+            setAnotherUserText(data.payload.index, data.payload.player)
+            another_player_online=true
+            disconnected.innerHTML = ``
+            if(turn===user_name){
+                turn_element.innerHTML = `Turn belongs to you`
+            }else{
+
+                turn_element.innerHTML = `Turn belongs to ${turn}`
+            }
+            if(data.payload.opponent_name){
+                document.getElementById('opponent_name').innerHTML= data.payload.opponent_name
+                game_opponent_fullname = data.payload.opponent_name
+            }
+            if(data.payload.opponent_image){
+                document.getElementById('opponent_image').src = data.payload.opponent_image
+            }
+            console.log("Who joined Creator?",data.payload.creator_joined)
+            console.log("Who joined Opponent?",data.payload.opponent_joined)
+            data.payload.creator_online?setOnline('creator_joined','creator_image'):console.log("Noting")
+            data.payload.opponent_online?setOnline('opponent_joined','opponent_image'):console.log("Noting")
+            document.getElementById('creator_game_won').innerHTML=data.payload.creator_won
+            document.getElementById('opponent_game_won').innerHTML=data.payload.opponent_won
+            document.getElementById('total_games_played').innerHTML=data.payload.total_games
+            document.getElementById('draw_games').innerHTML=data.payload.draw_games
+        }else if(data.payload.message_type==="user_disconnected"){
+            user_disconnected = data.payload.d_username
+            another_player_online=false
+            disconnected = document.getElementById('disconnected')
+            disconnected.innerHTML = `User ${user_disconnected} disconnected`
+            console.log("Who offline Creator?",data.payload.creator_joined)
+            console.log("Who offline Opponent?",data.payload.opponent_joined)
+            data.payload.creator_offline?setOffline('creator_joined','creator_image'):""
+            data.payload.opponent_offline?setOffline('opponent_joined', 'opponent_image'):""
+        }else if(data.payload.message_type==="self_joined"){
+            creator_image = data.payload.creator_image
+            opponent_image = data.payload.opponent_image 
+            console.log("Creator image is: ", creator_image)
+            console.log("Opponent image is: ", opponent_image)
+            if(creator_image!==""){
+                document.getElementById('creator_image').src = creator_image
+            }
+            if(opponent_image!==""){
+                document.getElementById('opponent_image').src = opponent_image
+            }
+            console.log("Who joined?",data.payload.creator_online)
+            console.log("Who joined?",data.payload.opponent_online)
+            data.payload.creator_online?setOnline('creator_joined', 'creator_image'):console.log("Noting")
+            data.payload.opponent_online?setOnline('opponent_joined', 'opponent_image'):console.log("Noting")
+        }
+        
+    }
+
+    const setAnotherUserText =(index, player)=>{
+        console.log("Set antother text")
+        for(let i=0; i<game_state.length; i++){
+            boxes[i].innerHTML=game_state[i];
+        }
+    }
+
+    socket.onclose = (e)=>{
+        console.log("Connect to channels disconnected")
+    }
+
+    const checkWon= (value, player)=>{
+        console.log("In check won")
+        for(let i=0; i<9; i++){
+            console.log(game_state[0])
+        }
+        console.log("#############")
+        let win=false
+        if(game_state[0]===value && game_state[1]===value  && game_state[2]===value){
+            win=true;
+        }else if(game_state[3]===value && game_state[4]===value  && game_state[5]===value){
+            win=true;
+        }else if(game_state[6]===value && game_state[7]===value  && game_state[8]===value){
+            win=true;
+        }else if(game_state[0]===value && game_state[3]===value  && game_state[6]===value){
+            win=true;
+        }else if(game_state[1]===value && game_state[4]===value  && game_state[7]===value){
+            win=true;
+        }else if(game_state[2]===value && game_state[5]===value  && game_state[8]===value){
+            win=true;
+        }else if(game_state[0]===value && game_state[4]===value  && game_state[8]===value){
+            win=true;
+        }else if(game_state[2]===value && game_state[4]===value  && game_state[6]===value){
+            win=true;
+        }
+
+        if(win){
+            data = {'type':'end', 'player':player, 'win_username':user_name}
+            socket.send(JSON.stringify({data}))
+            clearGame()
+            swal("Good Job", "You Won!", "success")
+        }
+
+        checkGame()
+    }
+
+    const checkGame=()=>{
+        count = 0
+        game_state.map((element)=>{
+            if(element!=""){
+                count=count+1
+            }
+        })
+        if(count>=9){
+            data = {'type':'over', 'player':player}
+            socket.send(JSON.stringify({data}))
+            swal("Ooh No!", "Game Draw!", "warning")
+            clearGame()
+            console.log("Clear game run")
+        }
+    }
+
+    const clearGame=()=>{
+        console.log("Clear game run")
+        game_state = ["", "", "", "", "", "", "", "", ""]
+        for(let i=0; i<game_state.length; i++){
+            boxes[i].innerHTML=game_state[i];
+        }
+    }
+
+</script>
+
+{% endblock start %}

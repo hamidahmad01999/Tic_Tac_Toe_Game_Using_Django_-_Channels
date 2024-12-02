@@ -1,0 +1,162 @@
+{% extends 'index.html' %}
+{% block start %}
+
+    <div style="min-height: 100vh;" class="bg-pink-500 grid grid-cols-12 grid-rows grid-rows-2 sm:grid-rows-1 ">
+        <div class="col-span-12 sm:col-span-5 md:col-span-4 bg-gray-800 text-white md:px-6 md:py-10 lg:px-5 lg:py-13 sm:px-7 px-2 py-2 flex flex-col items-center">
+            <div class="mb-3 flex flex-col items-center relative">
+                {% if profile.image %}
+                    <img id="image" ondblclick="uploadImage()" class="h-[150px] w-[150px] sm:h-[200px] md:h-[250px] sm:w-[200px] md:w-[250px] rounded-full" class="h-[100px]" src="{{profile.image.url}}" alt="">
+                {% else %}
+                    {% load static %}
+                    <img id="image" ondblclick="uploadImage()" class="h-[150px] h-[150px] w-[150px] sm:h-[200px] md:h-[250px] sm:w-[200px] md:w-[250px] rounded-full" class="h-[100px]" src="{% static '/images/user.png' %}" alt="">
+                {% endif %}
+                <form class="hidden" action="{% url 'upload_image' %}" enctype="multipart/form-data" method="post">
+                    {% csrf_token %}
+                    <div class="rouned-full">
+                        <input id="image_input" type="file" accept="image/*" name="image">
+                        <button id="image_btn" type="submit">Upload</button>
+                    </div>
+                </form>
+            </div>
+            <div class="w-[200px] sm:w-[250px] md:w-[300px] flex flex-col">
+                <div class="flex justify-between text-lg my-[2px]"><p>Name: </p><p>{{first_name}}</p></div>
+                <div class="flex justify-between text-lg my-[2px]"><p>Total Matches:</p><p>{{profile.total_matches}}</p></div>
+                <div class="flex justify-between text-lg my-[2px]"><p>Matches won: </p><p>{{profile.wins}}</p></div>
+                <div class="flex justify-between text-lg my-[2px]"><p>Points: </p><p>{{profile.points}}</p></div>
+                <div class="flex justify-between text-lg my-[2px]"><p>Rank: </p><p>{{profile.rank}}</p></div>
+                
+            </div>
+             
+        </div>
+        <div class="col-span-12 sm:col-span-7 md:col-span-8 flex flex-col items-center md:px-6 md:py-4 lg:px-5 lg:py-3 sm:px-3 px-2 py-2">
+            <div>
+                <h1 class="text-3xl text-white font-bold text-center">Play Tic Tac Toe Game</h1>
+            </div>
+            <div class="flex justify-center my-4 w-[90%] sm:w-[70%] md:w-[50%] ">
+                <form method="post" class="w-full md:px-3 text-lg text-white">
+                    {% csrf_token %}
+                    {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                        <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    <div class="my-2 w-full hidden">
+                        <label for="player1" class="block text-sm font-medium ">Enter User Name</label>
+                        <input class="w-full px-2 py-1 rounded-lg my-1 text-black" name="username" type="text" placeholder="Enter user name." value="{{ username }}">
+                    </div>
+                    <div class="my-2">
+                        <label for="player1" class="block text-sm font-medium ">Choose Option</label>
+                        <select class="text-black w-full px-2 py-1 rounded-lg my-1 outline-none border-[1px] border-black" name="option" id="selection" onchange="generateRoomID()">
+                            <option value="1">Has Room Code</option>
+                            <option value="2">Create Room Code</option>
+                        </select>
+                    </div>
+                    <div class="my-2">
+                        <label for="player1" class="block text-sm font-medium ">Enter Room Code</label>
+                        <input class="w-full px-2 py-1 rounded-lg my-1 text-black outline-none border-[1px] border-black" name="room_code" type="text" placeholder="Enter/Generate room code." id="room_code_input">
+                    </div>
+                    <div class="my-2">
+                        <button type="submit" class="bg-gray-500 border-2 border-white hover:bg-gray-700 text-white duration-500 px-2 py-2 rounded-lg">Start Game</>
+                    </div>
+                    <p id="error_message"></p>
+                </form>
+            </div>
+            <div class="w-full mt-5 flex flex-col items-center" >
+                {% if top_profiles %}
+                    <div>
+                        <h1 class="text-3xl text-white font-bold text-center my-1">Meet our top Players!</h1>
+                    </div>
+                    <div class="overflow-x-auto w-[90%] md:sm-[80%] md:w-[70%] flex justify-center ">
+                        <table class="min-w-[80%] table-auto border-collapse border border-gray-300 rounded-lg">
+                            <thead class="bg-gray-300">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-gray-600 font-medium text-center">Rank</th>
+                                    <th class="px-4 py-2 text-left text-gray-600 font-medium text-center">Username</th>
+                                    <th class="px-4 py-2 text-left text-gray-600 font-medium text-center">Points</th>
+                                    <th class="px-4 py-2 text-left text-gray-600 font-medium text-center">Wins</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for p in top_profiles %}
+                    <!-- <div class="text-white flex justify-around w-full">
+                        <b>{{forloop.counter}}</b>  <p>{{p.user.username}}</p> <p>{{p.points}}</p> <p>{{p.wins}}</p> -->
+                                    
+                                    <tr class="odd:bg-gray-100 even:bg-white border-b hover:bg-gray-50">
+                                        <td class="px-4 py-2 text-gray-700 text-center">{{forloop.counter}}</td>
+                                        <td class="px-4 py-2 text-gray-700 text-center">
+                                            <a class="cursor-pointer" href="user/{{p.user.id}}">{{p.user.username}}</a>
+                                        </td>
+                                        <td class="px-4 py-2 text-gray-700 text-center">
+                                            {{p.points}}
+                                        </td>
+                                        <td class="px-4 py-2 text-gray-700 text-center">
+                                            {{p.wins}}
+                                        </td>
+                                    </tr>
+                                    
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <script>
+        const generateRoomID =async ()=>{
+            let selection = document.getElementById("selection")
+            let room_code_input = document.getElementById("room_code_input")
+            let value = selection.value
+            console.log(value)
+            console.log(typeof(value))
+            if(value==="2"){
+                room_code=await getRoomIDFromBackend()
+                console.log("going to add", room_code, room_code.room_code)
+                console.log(room_code_input)
+                room_code_input.value=room_code.room_code
+            }
+        }
+
+        let err_element= document.getElementById('error_message')
+        const getRoomIDFromBackend =async ()=>{
+            try{
+                console.log("Asking for room_id")
+                const response = await fetch("{% url 'create_room_id' %}")
+                console.log(response)
+
+                if(!response.ok){
+                    return err_element.innerHTML("Internal Server error")
+                }
+
+                const data = await response.json()
+                console.log("UUID ", data)
+                return data
+
+            }catch(err){
+                err_element.innerHTML="Internal Server error"
+                console.log(err)
+            }
+        }
+
+        // upload image 
+        const image = document.getElementById('image')
+        const image_input = document.getElementById('image_input')
+        const image_btn = document.getElementById('image_btn')
+
+        const uploadImage = ()=>{
+            image_input.click()
+        }
+
+        image_input.addEventListener('change', (event)=>{
+            const file = event.target.files[0]
+            console.log(file)
+            image_btn.click()
+        })
+
+    </script>
+
+{% endblock start %}

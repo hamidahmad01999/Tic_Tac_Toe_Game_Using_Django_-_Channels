@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ludo Game Template</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Basic Styling for the Ludo Board */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(15, 1fr); /* 15 columns */
+            grid-template-rows: repeat(15, 1fr); /* 15 rows */
+            gap: 1px;
+            width: 90vmin;
+            height: 90vmin;
+            background-color: #ddd;
+            border: 2px solid #333;
+            border-radius: 10px;
+        }
+
+        .board div {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+            border: 1px solid #ddd;
+        }
+
+        /* Add colors for different regions on the Ludo board */
+        .home, .start {
+            background-color: #ffed56;
+        }
+        .safe-zone {
+            background-color: #ff4757;
+        }
+        .path {
+            background-color: #1e90ff;
+        }
+        .outside {
+            background-color: #2ed573;
+        }
+
+        .piece {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: red;
+            position: relative;
+            cursor: pointer;
+        }
+
+        /* Example piece colors for different players */
+        .piece.red { background-color: red; }
+        .piece.green { background-color: green; }
+        .piece.blue { background-color: blue; }
+        .piece.yellow { background-color: yellow; }
+    </style>
+</head>
+<body>
+
+<div class="board">
+    <!-- Home Zone -->
+    <div class="home"></div>
+    <div class="home"></div>
+    <div class="home"></div>
+    <div class="home"></div>
+
+    <!-- Start Path -->
+    <div class="start"></div>
+    <div class="path"></div>
+    <div class="path"></div>
+    <div class="path"></div>
+    <div class="path"></div>
+    <div class="path"></div>
+    <div class="path"></div>
+
+    <!-- Safe Zone (where pieces are safe) -->
+    <div class="safe-zone"></div>
+    <div class="safe-zone"></div>
+    <div class="safe-zone"></div>
+    <div class="safe-zone"></div>
+
+    <!-- Outside Path -->
+    <div class="outside"></div>
+    <div class="outside"></div>
+    <div class="outside"></div>
+    <div class="outside"></div>
+
+    <!-- Central Path -->
+    <div class="path"></div>
+    <div class="path"></div>
+    <div class="path"></div>
+    <div class="path"></div>
+    <div class="path"></div>
+
+    <!-- Additional Cells for layout -->
+    <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+    <div></div><div></div><div></div><div></div><div></div><div></div>
+    
+    <!-- Example Pieces (representing players) -->
+    <div class="piece red" style="grid-column: 2; grid-row: 2;"></div>
+    <div class="piece green" style="grid-column: 3; grid-row: 3;"></div>
+    <div class="piece blue" style="grid-column: 4; grid-row: 4;"></div>
+    <div class="piece yellow" style="grid-column: 5; grid-row: 5;"></div>
+</div>
+
+</body>
+</html>

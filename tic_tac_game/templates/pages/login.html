@@ -1,0 +1,32 @@
+{% extends "index.html" %}
+{% block start %}
+
+<div class="w-[90%] sm:w-[70%] md:w-[45%] lg:w-[30%] my-4 md:my-8 mx-auto py-3 md:py-6 px-3 md:px-6 text-lg rounded-xl shadow-2xl">
+    <div>
+        <h2 class="text-center text-xl md:text-3xl">Login User</h2>
+        <div >
+            <form method="post">
+                {% csrf_token %}
+                <div class="my-1 md:my-2">
+                    <label for="">Username</label>
+                    <input class="mt-1 w-full outline-none shadod-lg border-[1px] border-black rounded-lg px-1 md:px-2 md:py-1 py-[2px]" type="text" name="username" maxlength="100">
+                </div>
+                <div class="my-1 md:my-2">
+                    <label for="">Password</label>
+                    <input class="mt-1 w-full outline-none shadod-lg border-[1px] border-black rounded-lg px-1 md:px-2 md:py-1 py-[2px]" type="password" name="password" maxlength="100" required>
+                </div>
+                <div class="my-2 md:my-3 md:my-2">
+                    <button class="bg-blue-500 w-full py-1 md:py-2 rounded-lg  text-xl text-white hover:bg-gray-500 duration-500">Login</button>
+                </div>
+                <!-- <small><a class="" href="/accounts/register/">Don't have an account?</a></small> -->
+                <small><a class="" href="{% url 'register' %}">Don't have an account?</a></small>
+            </form>
+            <div>
+                {% include "components/message.html" %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
